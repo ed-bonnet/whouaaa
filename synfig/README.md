@@ -1,0 +1,1 @@
+Merci de placer ici les animations synfigs.
