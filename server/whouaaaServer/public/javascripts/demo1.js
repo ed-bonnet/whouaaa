@@ -14,8 +14,12 @@ let mainObject;
 let startAnimation = false;
 let counter = 0;
 let animationDirection = 1;
-let stop = false;
+let stop = true;
 let animationAction;
+
+let lottieAnimation;
+let audios = [];
+let audioCursor = 0;
 
 var initialize = function(){
     raycaster = new THREE.Raycaster();
@@ -31,12 +35,12 @@ var animate = function() {
     if(startAnimation && !stop){
         const delta = clock.getDelta();
         mixer.update(delta * animationDirection);
-        counter += delta;
+        // counter += delta;
 
-        if(counter > 2.5){
-            counter = 0;
-            animationDirection *= -1;
-        }
+        // if(counter > 2.5){
+        //     counter = 0;
+        //     animationDirection *= -1;
+        // }
     }
 
     renderer.render(scene, camera);
@@ -44,6 +48,12 @@ var animate = function() {
 
 var raycast = function (event){
     event.preventDefault();
+
+    const audioCurrentlyPlayed = audios.find(a => !a.prop('paused'));
+
+    if(audioCurrentlyPlayed){
+        return;
+    }
 
     // update the mouse variable
     mouse.x = (event.clientX / renderer.domElement.clientWidth) * 2 - 1;
@@ -53,21 +63,43 @@ var raycast = function (event){
     const intersects = raycaster.intersectObjects( scene.children, true );
 
     if ( intersects.length > 0 ) {
-        stop = !stop;
         console.log('clicked', intersects[0]);
-        if(stop){
-            animationAction.stop();
-            $('#audio_whouaaa2').trigger('play');
-        }else{
-            $('#audio_whouaaa1').trigger('play');
-            animationAction.play();
-        }
+
+        audios[audioCursor].trigger('play');
+        audioCursor = (audioCursor +1) % audios.length;
+
+        stop = false;
+        animationAction.play();
     }
+}
+var loadLottieAnimation = function(){
+    lottieAnimation = lottie.loadAnimation({
+        container: document.getElementById('anim-waiter'),
+        renderer: 'svg',
+        loop: true,
+        autoplay: true,
+        path: '../animations/nuit_jour_export_lottie.sifz.6C41B1FD.json',
+    });
+    console.log('lottie loaded');
 }
 
 $(function(){
-    $('#audio_whouaaa1').prop('volume', 0.1);
-    $('#audio_whouaaa2').prop('volume', 0.1);
+    loadLottieAnimation();
+
+    audios.push($('#audio_whouaaa2'));
+    audios.push($('#audio_whouaaa3'));
+    audios.push($('#audio_whouaaa4'));
+    audios.push($('#audio_whouaaa1'));
+
+    audios.forEach(a => a.prop('volume', 0.1));
+
+    $('audio').on('ended', function test() {
+        console.log('audio ended');
+        animationAction.reset();
+        animationAction.stop();
+        stop = true;
+    });
+
     scene = new THREE.Scene();
     // const axesHelper = new THREE.AxesHelper(5);
     // scene.add(axesHelper)
@@ -98,7 +130,6 @@ $(function(){
 
     fbxLoader.load(
         '../obj/Drunk_Walk.fbx',
-        //'../obj/Defeated.fbx',
          //'../obj/ouauh.fbx',
         (object) => {
             mainObject = object;
@@ -116,6 +147,12 @@ $(function(){
 
             // then start the animation in the updater
             startAnimation = true;
+
+            $('#anim-waiter').fadeOut(1000, function(){
+                console.log('lottie destruction');
+                lottieAnimation.destroy();
+            });
+            
         },
         (xhr) => { console.log("chargé!"); },
         (error) => { console.log("error!", error); },
