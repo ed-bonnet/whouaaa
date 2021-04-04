@@ -74,7 +74,7 @@ var raycast = function (event){
 
 
         stop = false;
-        // animationAction.play();
+        animationAction.play();
     }
 }
 var loadLottieAnimation = function(){
@@ -102,16 +102,16 @@ var loadFbx = function(url, callback){
 
             mixer = new THREE.AnimationMixer(object);
 
-            // animationAction = mixer.clipAction(object.animations[0]);
+            animationAction = mixer.clipAction(object.animations[0]);
 
 
-            // animationAction.play();
+            animationAction.play();
 
-            // // start to animate a frame
-            // clock.getDelta();
+            // start to animate a frame
+            clock.getDelta();
 
-            // // then start the animation in the updater
-            // startAnimation = true;
+            // then start the animation in the updater
+            startAnimation = true;
 
         },
         (xhr) => { console.log("chargé!"); },
@@ -142,7 +142,7 @@ $(function(){
         animationAction.reset();
         animationAction.stop();
         }catch{
-            
+
         }
         stop = true;
     });
@@ -151,16 +151,16 @@ $(function(){
     // const axesHelper = new THREE.AxesHelper(5);
     // scene.add(axesHelper)
 
-    // let light = new THREE.PointLight();
+    // let light = new THREE.PointLight(0xffffff, 25);
     // light.position.x = 2.50;
     // light.position.y = 2.50;
     // light.position.z = 2.50;
     // scene.add(light);
 
-    // let ambientLight = new THREE.AmbientLight();
+    // let ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
     // scene.add(ambientLight);
 
-    scene.add(new THREE.HemisphereLight(0xf6e86d, 0x404040, 0.5));
+    scene.add(new THREE.HemisphereLight(0xf6e86d, 0x404040, 15));
     // scene.add(new THREE.SpotLight(0xf6e86d, 0.5));
 
     camera = new THREE.PerspectiveCamera(75, window.innerWidth /window.innerHeight, 0.1, 1000);
@@ -182,29 +182,29 @@ $(function(){
     initialize();
 
     renderer.domElement.addEventListener('click', raycast, false);
-    loadFbx('../obj/test2_all.fbx', (object) => {
-        object.position.x = -2;
-        object.scale.set(.005, .005, .005);
-        if(objects.length === 3){
-            destroyLottieLoader();
-        }
-    });
+    // loadFbx('../obj/test2_all.fbx', (object) => {
+    //     object.position.x = -2;
+    //     object.scale.set(.005, .005, .005);
+    //     if(objects.length === 3){
+    //         destroyLottieLoader();
+    //     }
+    // });
 
     loadFbx('../obj/test_triangle.FBX', (object) => {
-        object.position.x = -1.7;
+        object.position.x = 0;
         object.scale.set(.027, .027, .027);
-        if(objects.length === 3){
+        if(objects.length === 1){
             destroyLottieLoader();
         }
     });
 
-    loadFbx('../obj/tete_adrien.fbx', (object) => {
-        object.scale.set(.01, .01, .01);
-        object.position.x = 2;
-        if(objects.length === 3){
-            destroyLottieLoader();
-        }
-    });
+    // loadFbx('../obj/tete_adrien.fbx', (object) => {
+    //     object.scale.set(.01, .01, .01);
+    //     object.position.x = 2;
+    //     if(objects.length === 3){
+    //         destroyLottieLoader();
+    //     }
+    // });
 
     animate();
 });
