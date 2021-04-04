@@ -11,16 +11,13 @@ let clock;
 let projector;
 let objects = [];
 let animations = [];
+let waiterEnded = false;
+const mixers = [];
 
-let startAnimation = false;
-let counter = 0;
-let animationDirection = 1;
-let stop = true;
-let animationAction;
+let cursor = -1;
 
 let lottieAnimation;
 let audios = [];
-let audioCursor = 0;
 
 var initialize = function(){
     raycaster = new THREE.Raycaster();
@@ -33,15 +30,9 @@ var initialize = function(){
 var animate = function() {
     requestAnimationFrame(animate);
 
-    if(startAnimation && !stop){
+    if(cursor !== -1){
         const delta = clock.getDelta();
-        mixer.update(delta * animationDirection);
-        // counter += delta;
-
-        // if(counter > 2.5){
-        //     counter = 0;
-        //     animationDirection *= -1;
-        // }
+        mixers[cursor].update(delta);
     }
 
     renderer.render(scene, camera);
@@ -67,14 +58,15 @@ var raycast = function (event){
 
         for(let i = 0 ; i < objects.length;i++){
            if(objects[i] === intersects[0].object.parent){
-               console.log('found');
+               cursor = i;
+               console.log('found', objects[i]);
                 audios[i].trigger('play');
+                animations[i].reset();
+                animations[i].play();
            } 
         }
 
 
-        stop = false;
-        animationAction.play();
     }
 }
 var loadLottieAnimation = function(){
@@ -83,7 +75,7 @@ var loadLottieAnimation = function(){
         renderer: 'svg',
         loop: true,
         autoplay: true,
-        path: '../animations/nuit_jour_export_lottie.sifz.6C41B1FD.json',
+        path: '../animations/nuit_jour_export_lottie.sifz.51330AD8.json',
     });
     console.log('lottie loaded');
 }
@@ -101,17 +93,11 @@ var loadFbx = function(url, callback){
             callback(object);
 
             mixer = new THREE.AnimationMixer(object);
+            mixers.push(mixer);
+            let anim = mixer.clipAction(object.animations[0]);
+            animations.push(anim);
 
-            animationAction = mixer.clipAction(object.animations[0]);
-
-
-            animationAction.play();
-
-            // start to animate a frame
-            clock.getDelta();
-
-            // then start the animation in the updater
-            startAnimation = true;
+            // anim.play();
 
         },
         (xhr) => { console.log("chargé!"); },
@@ -127,7 +113,10 @@ var destroyLottieLoader = function(){
 }
 
 $(function(){
+    $('#anim-waiter').css('height', window.innerHeight);
     loadLottieAnimation();
+
+
 
     audios.push($('#audio_whouaaa4'));
     audios.push($('#audio_whouaaa3'));
@@ -139,12 +128,14 @@ $(function(){
     $('audio').on('ended', function test() {
         console.log('audio ended');
         try{
-        animationAction.reset();
-        animationAction.stop();
+            animations.forEach(a => {
+                a.reset();
+                a.stop();
+            });
+            cursor = -1;
         }catch{
 
         }
-        stop = true;
     });
 
     scene = new THREE.Scene();
@@ -182,29 +173,37 @@ $(function(){
     initialize();
 
     renderer.domElement.addEventListener('click', raycast, false);
-    // loadFbx('../obj/test2_all.fbx', (object) => {
-    //     object.position.x = -2;
-    //     object.scale.set(.005, .005, .005);
-    //     if(objects.length === 3){
-    //         destroyLottieLoader();
-    //     }
-    // });
-
-    loadFbx('../obj/test_triangle.FBX', (object) => {
-        object.position.x = 0;
+    loadFbx('../obj/test_triangle_jaune.fbx', (object) => {
+        object.position.x = -2;
         object.scale.set(.027, .027, .027);
-        if(objects.length === 1){
+        if(objects.length === 3 && waiterEnded){
             destroyLottieLoader();
         }
     });
 
-    // loadFbx('../obj/tete_adrien.fbx', (object) => {
-    //     object.scale.set(.01, .01, .01);
-    //     object.position.x = 2;
-    //     if(objects.length === 3){
-    //         destroyLottieLoader();
-    //     }
-    // });
+    loadFbx('../obj/test_triangle.FBX', (object) => {
+        object.position.x = 0;
+        object.scale.set(.027, .027, .027);
+        if(objects.length === 3 && waiterEnded){
+            destroyLottieLoader();
+        }
+    });
+
+    loadFbx('../obj/test_triangle_bleu.fbx', (object) => {
+        object.scale.set(.027, .027, .027);
+        object.position.x = 2;
+        if(objects.length === 3 && waiterEnded){
+            destroyLottieLoader();
+        }
+    });
 
     animate();
+
+    
+    setTimeout(function() { 
+        waiterEnded = true;
+        if(objects.length === 3 && waiterEnded){
+            destroyLottieLoader();
+        }
+    }, 3000);
 });
