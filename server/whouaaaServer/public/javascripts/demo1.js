@@ -190,7 +190,7 @@ $(function(){
         }
     });
 
-    loadFbx('../obj/ouauh.fbx', (object) => {
+    loadFbx('../obj/test_triangle.FBX', (object) => {
         object.position.x = -1.7;
         object.scale.set(.027, .027, .027);
         if(objects.length === 3){
